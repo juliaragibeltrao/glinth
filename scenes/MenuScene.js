@@ -31,7 +31,7 @@ export default class MenuScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Start Button
-        const startButton = this.add.text(width / 2, height / 2 + 150, 'Wake Up', {
+        const startButton = this.add.text(width / 2, height / 2 + 150, 'Jogar', {
             fontFamily: 'Quicksand',
             fontSize: '50px',
             color: '#ffffff',

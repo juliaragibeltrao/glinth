@@ -383,7 +383,7 @@ export default class GameScene extends Phaser.Scene {
             });
 
             // Transition text
-            const transText = this.add.text(width/2, height/2, "Deepening the dream...", {
+            const transText = this.add.text(width/2, height/2, "Aprofundando o sonho...", {
                 fontFamily: 'Quicksand',
                 fontSize: '40px',
                 color: '#333333'
