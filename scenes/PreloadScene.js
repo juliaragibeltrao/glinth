@@ -40,9 +40,6 @@ export default class PreloadScene extends Phaser.Scene {
 
         // Load assets
         this.load.image('nova-front', 'Assets/nova-main-sprite.webp'); // New character sprite
-        this.load.image('nova-back', 'Assets/nova-back.webp');
-        this.load.image('nova-side-left', 'Assets/nova-side-left.webp');
-        this.load.image('nova-side-right', 'Assets/nova-side-right.webp');
         
         this.load.image('dreamscape-bg', 'Assets/dreamscape-bg.webp');
         this.load.image('map1-bg', 'Assets/map1-bg-blue.webp');
