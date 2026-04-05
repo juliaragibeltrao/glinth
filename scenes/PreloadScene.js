@@ -39,20 +39,20 @@ export default class PreloadScene extends Phaser.Scene {
         });
 
         // Load assets
-        this.load.image('nova-front', 'glinth/assets/nova-main-sprite.webp'); // New character sprite
-        this.load.image('nova-back', 'glinth/assets/nova-back.webp');
-        this.load.image('nova-side-left', 'glinth/assets/nova-side-left.webp');
-        this.load.image('nova-side-right', 'glinth/assets/nova-side-right.webp');
+        this.load.image('nova-front', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/nova-main-sprite.webp'); // New character sprite
+        this.load.image('nova-back', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/nova-back.webp');
+        this.load.image('nova-side-left', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/nova-side-left.webp');
+        this.load.image('nova-side-right', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/nova-side-right.webp');
         
-        this.load.image('dreamscape-bg', 'glinth/assets/dreamscape-bg.webp');
-        this.load.image('map1-bg', 'glinth/assets/map1-bg-blue.webp');
-        this.load.image('map2-bg', 'glinth/assets/map2-bg-orange.webp');
-        this.load.image('map3-bg', 'glinth/assets/map3-bg-surreal.webp');
+        this.load.image('dreamscape-bg', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/dreamscape-bg.webp');
+        this.load.image('map1-bg', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/map1-bg-blue.webp');
+        this.load.image('map2-bg', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/map2-bg-orange.webp');
+        this.load.image('map3-bg', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/map3-bg-surreal.webp');
         
-        this.load.image('crystal-shard', 'glinth/assets/crystal-shard.webp');
-        this.load.image('altar', 'glinth/assets/altar.webp');
-        this.load.image('spike', 'glinth/assets/shadow-crystal-webp.webp');
-        this.load.image('dream-pad', 'glinth/assets/altar.webp'); // Temporary pad visual
+        this.load.image('crystal-shard', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/crystal-shard.webp');
+        this.load.image('altar', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/assets/altar.webp');
+        this.load.image('spike', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/shadow-crystal-webp.webp');
+        this.load.image('dream-pad', 'https://juliaragibeltrao.github.io/glinth/glinth/assets/altar.webp'); // Temporary pad visual
     }
 
     create() {
