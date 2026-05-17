@@ -51,7 +51,7 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image('map3-bg', 'Assets/map3-bg-surreal.webp');
         
         this.load.image('crystal-shard', 'Assets/crystal-shard.webp');
-        this.load.image('altar', 'Assets/pilar-lógico.webp');
+        this.load.image('altar', 'Assets/altar.webp');
         this.load.image('spike', 'Assets/shadow-crystal-webp.webp');
         this.load.image('dream-pad', 'Assets/altar.webp'); // Temporary pad visual
         this.load.image('aria-guide', 'Assets/aria-guide-webp.webp');
