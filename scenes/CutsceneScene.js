@@ -39,7 +39,7 @@ export default class CutsceneScene extends Phaser.Scene {
         }
 
         const video = document.createElement('video');
-        video.src = 'assets/intro-cutscene.mp4';
+        video.src = 'Assets/intro-cutscene.mp4.mp4';
         video.autoplay = true;
         video.playsInline = true;
         video.controls = false;
