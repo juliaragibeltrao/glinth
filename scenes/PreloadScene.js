@@ -40,7 +40,7 @@ export default class PreloadScene extends Phaser.Scene {
 
         // Load assets
         this.load.image('nova-front', 'Assets/nova-main-sprite.webp'); // Main consistent sprite
-        this.load.image('nova-back', 'Assets/nova-back-final-webp.jpeg'); // Accurate silhouette back view
+        this.load.image('nova-back', 'Assets/nova-main-sprite.webp'); // Accurate silhouette back view
         this.load.image('nova-side', 'Assets/nova-main-sprite.webp'); // Use main sprite for side views to keep design 100% identical
         this.load.image('nova-side-left', 'Assets/nova-main-sprite.webp');
         this.load.image('nova-side-right', 'Assets/nova-main-sprite.webp');
