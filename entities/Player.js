@@ -23,51 +23,78 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Facing direction
         this.facing = 'front';
+        this.isInvulnerable = false;
+        
+        // Base scale for the character
+        this.baseScale = 0.25;
     }
 
     update() {
         // Stop movement if scene tells us input is disabled
-        if (this.scene.player && !this.scene.player.inputEnabled) {
+        if (this.scene.isTransitioning || this.scene.isGameOver) {
             this.setVelocity(0);
             return;
         }
 
         this.setVelocity(0);
 
-        let isMoving = false;
+        let moveX = 0;
+        let moveY = 0;
 
-        // Simplified movement: Always use the main front-facing texture from the upload
-        // We only flip it horizontally for side movement to keep it consistent
+        // Horizontal movement
         if (this.cursors.left.isDown || this.wasd.left.isDown) {
-            this.setVelocityX(-this.speed);
-            this.setFlipX(false);
-            isMoving = true;
+            moveX = -1;
         } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-            this.setVelocityX(this.speed);
-            this.setFlipX(true);
-            isMoving = true;
+            moveX = 1;
         }
 
+        // Vertical movement
         if (this.cursors.up.isDown || this.wasd.up.isDown) {
-            this.setVelocityY(-this.speed);
-            isMoving = true;
+            moveY = -1;
         } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-            this.setVelocityY(this.speed);
-            isMoving = true;
+            moveY = 1;
         }
 
-        // Normalize speed for diagonal movement
-        if (this.body.velocity.x !== 0 && this.body.velocity.y !== 0) {
-            this.body.velocity.normalize().scale(this.speed);
-        }
+        const isMoving = moveX !== 0 || moveY !== 0;
 
-        // Smooth floating animation
-        if (!isMoving) {
-            this.y += Math.sin(this.scene.time.now / 400) * 0.15;
-            this.setScale(0.25); // Baseline scale
+        if (isMoving) {
+            const vector = new Phaser.Math.Vector2(moveX, moveY).normalize().scale(this.speed);
+            this.setVelocity(vector.x, vector.y);
+            
+            // Set correct texture and ensure absolute scale consistency
+            if (moveX < 0) {
+                this.setTexture('nova-side');
+                this.setFlipX(false);
+                this.setScale(this.baseScale); 
+            } else if (moveX > 0) {
+                this.setTexture('nova-side');
+                this.setFlipX(true);
+                this.setScale(this.baseScale);
+            } else if (moveY < 0) {
+                this.setTexture('nova-back');
+                this.setFlipX(false);
+                this.setScale(this.baseScale); 
+            } else {
+                this.setTexture('nova-front');
+                this.setFlipX(false);
+                this.setScale(this.baseScale);
+            }
+
+            // Procedural walking animation: subtle bobbing and tilt
+            this.angle = Math.sin(this.scene.time.now / 100) * 2;
+            const walkScale = 0.005 * Math.sin(this.scene.time.now / 80);
+            this.scaleX += walkScale;
+            this.scaleY -= walkScale;
+
         } else {
-            // Subtle "walking" squash/stretch
-            this.setScale(0.25 + Math.sin(this.scene.time.now / 100) * 0.01, 0.25 - Math.sin(this.scene.time.now / 100) * 0.01);
+            // Idle state: reset rotation and maintain base scale
+            this.setTexture('nova-front');
+            this.setFlipX(false);
+            this.setScale(this.baseScale);
+            this.angle = 0;
+            
+            // Gentle idle float
+            this.y += Math.sin(this.scene.time.now / 400) * 0.1;
         }
     }
 }

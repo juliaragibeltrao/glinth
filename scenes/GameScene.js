@@ -1,3 +1,4 @@
+
 import Phaser from 'phaser';
 import Player from '../entities/Player.js';
 import { audioManager } from '../AudioManager.js';
@@ -18,8 +19,8 @@ export default class GameScene extends Phaser.Scene {
                 name: 'The Mystical Shallows',
                 themeColor: 0x4fc3f7,
                 difficulty: 'Gentle',
-                narrative: 'Vejo esferas de luz espalhadas aqui... e pedestais ocos. Talvez se eu guiar os orbes até o lugar deles, o caminho se abra.',
-                history: 'Um fragmento de uma memória: Um brinquedo de infância, perdido num mar azul de mantas.',
+                narrative: 'Welcome, Nova! I am Aria, your guide. Look at those orbs of light... guide them to the pedestals to open your path.',
+                history: 'A fragment of a memory: A childhood toy, lost in a blue sea of blankets.',
                 orbCount: 2,
                 particleConfig: {
                     speedX: { min: -5, max: 5 },
@@ -36,8 +37,8 @@ export default class GameScene extends Phaser.Scene {
                 name: 'Autumnal Echoes',
                 themeColor: 0xffb74d,
                 difficulty: 'Tricky',
-                narrative: 'O solo parece instável. Mais orbes, mais pedestais. O sonho exige ordem.',
-                history: 'Um fragmento de memória: O som de folhas sendo esmagadas enquanto eu corria de casa.',
+                narrative: 'Be careful here, the dream is shifting. More orbs need their place for the dream to maintain its order.',
+                history: 'A fragment of a memory: The sound of crunching leaves as I ran from home.',
                 orbCount: 3,
                 particleConfig: {
                     speedX: { min: -20, max: 20 },
@@ -55,8 +56,8 @@ export default class GameScene extends Phaser.Scene {
                 name: 'The Chronos Void',
                 themeColor: 0xba68c8,
                 difficulty: 'Intense',
-                narrative: 'Tudo está fragmentado. As peças finais do quebra-cabeça devem estar alinhadas.',
-                history: 'A verdade final: este mundo é apenas uma gaiola que eu mesmo criei.',
+                narrative: 'We are close to the end, but the fragments are many. Align the final pieces to find your way back home.',
+                history: 'The final truth: This world is but a cage of my own making.',
                 orbCount: 4,
                 particleConfig: {
                     speedX: { min: -50, max: 50 },
@@ -80,6 +81,7 @@ export default class GameScene extends Phaser.Scene {
         }
         this.isGameOver = false;
         this.isTransitioning = false;
+        this.isRespawning = false; // Reset respawn state on init
         this.glinthsCollected = 0;
     }
 
@@ -132,6 +134,19 @@ export default class GameScene extends Phaser.Scene {
 
         // UI
         this.createUI();
+
+        // Particle Trail for Nova
+        this.playerTrail = this.add.particles(0, 0, 'crystal-shard', {
+            scale: { start: 0.05, end: 0 },
+            alpha: { start: 0.5, end: 0 },
+            lifespan: 800,
+            blendMode: 'ADD',
+            tint: currentMap.themeColor,
+            frequency: 40,
+            follow: this.player,
+            followOffset: { y: 20 }
+        });
+        this.playerTrail.setDepth(9); // Just behind Nova
 
         // Narrative
         this.showNarrative(currentMap.narrative);
@@ -212,8 +227,9 @@ export default class GameScene extends Phaser.Scene {
             const orb = this.orbs.create(orbX, orbY, 'crystal-shard');
             orb.setScale(0.2);
             orb.setTint(0xffffff);
-            orb.setDrag(1000);
+            orb.setDrag(500); // Reduced drag from 1000 to 500 for easier movement
             orb.setCircle(100);
+            orb.setBounce(0.5); // More reactive
             orb.body.setCollideWorldBounds(true);
         }
 
@@ -251,10 +267,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     pushOrb(player, orb) {
-        // Simple push logic: move orb in the direction player is moving
-        const force = 300;
-        if (player.body.velocity.x !== 0) orb.setVelocityX(player.body.velocity.x * 0.8);
-        if (player.body.velocity.y !== 0) orb.setVelocityY(player.body.velocity.y * 0.8);
+        // More powerful push logic
+        const pushForce = 0.9;
+        orb.setVelocityX(player.body.velocity.x * pushForce);
+        orb.setVelocityY(player.body.velocity.y * pushForce);
     }
 
     update() {
@@ -266,12 +282,32 @@ export default class GameScene extends Phaser.Scene {
         this.slots.getChildren().forEach(slot => {
             let isAnyOrbClose = false;
             this.orbs.getChildren().forEach(orb => {
+                // Skip if orb is already locked to another slot (optional but good)
                 const dist = Phaser.Math.Distance.Between(orb.x, orb.y, slot.x, slot.y);
-                if (dist < 40) {
+                
+                if (dist < 120) { // Even larger magnetic radius
                     isAnyOrbClose = true;
-                    // Snap orb to slot
-                    orb.x = Phaser.Math.Linear(orb.x, slot.x, 0.1);
-                    orb.y = Phaser.Math.Linear(orb.y, slot.y, 0.1);
+                    
+                    // If close, start pulling and reduce orb's resistance
+                    const pullStrength = 0.25;
+                    orb.x = Phaser.Math.Linear(orb.x, slot.x, pullStrength);
+                    orb.y = Phaser.Math.Linear(orb.y, slot.y, pullStrength);
+                    
+                    // When close to snapping, make it easier
+                    if (dist < 50) {
+                        // Disable collision with player once it's basically home
+                        // This prevents the player from pushing it out while trying to "fit" it
+                        orb.body.enable = false; 
+                        orb.x = Phaser.Math.Linear(orb.x, slot.x, 0.4);
+                        orb.y = Phaser.Math.Linear(orb.y, slot.y, 0.4);
+                        
+                        // Precise snap
+                        if (dist < 5) {
+                            orb.x = slot.x;
+                            orb.y = slot.y;
+                            orb.setVelocity(0, 0);
+                        }
+                    }
                     orb.setTint(0xffeb3b);
                 }
             });
@@ -303,7 +339,7 @@ export default class GameScene extends Phaser.Scene {
             yoyo: true,
             repeat: -1
         });
-        this.showNarrative("Os orbes ressoam! O Glinth deste reino apareceu.");
+        this.showNarrative("Wonderful! The Glinth of this realm has finally appeared. Go get it!");
     }
 
     collectShard(player, shard) {
@@ -312,26 +348,38 @@ export default class GameScene extends Phaser.Scene {
         this.glinthsCollected++;
         this.createBlastEffect(shard.x, shard.y, 0xffffff);
         this.altar.setAlpha(1);
-        this.showNarrative("O Altar despertou. O portal está aberto.");
+        this.showNarrative("The Altar is awake! The gateway to the next realm is now open for you.");
     }
 
     handleHazardHit(player, hazard) {
-        if (this.isRespawning) return;
+        if (player.isInvulnerable || this.isTransitioning) return;
+        
         audioManager.playHitSfx();
         this.lives--;
         this.livesLabel.setText(`Lives: ${this.lives}`);
-        this.isRespawning = true;
+        
+        // Start invulnerability
+        player.isInvulnerable = true;
         this.cameras.main.shake(300, 0.01);
-        this.player.setTint(0xff0000);
+        
+        // Visual Feedback: Red tint + Flash
+        player.setTint(0xff0000);
+        
+        this.tweens.add({
+            targets: player,
+            alpha: 0.3,
+            duration: 100,
+            yoyo: true,
+            repeat: 8,
+            onComplete: () => {
+                player.alpha = 1;
+                player.clearTint();
+                player.isInvulnerable = false;
+            }
+        });
 
         if (this.lives <= 0) {
             this.handleMapReset();
-        } else {
-            this.time.delayedCall(500, () => {
-                this.player.clearTint();
-                this.player.setPosition(this.scale.width/2, this.scale.height - 200);
-                this.isRespawning = false;
-            });
         }
     }
 
@@ -383,7 +431,7 @@ export default class GameScene extends Phaser.Scene {
             });
 
             // Transition text
-            const transText = this.add.text(width/2, height/2, "Aprofundando o sonho...", {
+            const transText = this.add.text(width/2, height/2, "Deepening the dream...", {
                 fontFamily: 'Quicksand',
                 fontSize: '40px',
                 color: '#333333'
@@ -420,7 +468,7 @@ export default class GameScene extends Phaser.Scene {
             }
         });
 
-        this.showNarrative("The light... it's blinding. Is this the end of the nightmare?");
+        this.showNarrative("You've done it, Nova! The light is returning. It's time to wake up.");
     }
 
     showEnding() {
@@ -499,25 +547,80 @@ export default class GameScene extends Phaser.Scene {
         if (!message) return;
         const { width, height } = this.scale;
         if (this.dialogueContainer) this.dialogueContainer.destroy();
+        
         this.dialogueContainer = this.add.container(0, 0).setDepth(200);
-        const box = this.add.rectangle(width / 2, height - 150, width - 400, 140, 0x000000, 0.8);
-        box.setStrokeStyle(4, 0x7e57c2);
-        const text = this.add.text(width / 2, height - 150, '', {
-            fontFamily: 'Quicksand', fontSize: '28px', color: '#ffffff', wordWrap: { width: width - 450 }, align: 'center'
+        
+        // Aria's Sprite (Portrait)
+        const aria = this.add.sprite(200, height - 160, 'aria-guide');
+        aria.setScale(0.3);
+        aria.setAlpha(0);
+        
+        // Dialogue Box
+        const boxWidth = width - 400;
+        const boxHeight = 150;
+        const boxX = width / 2 + 80;
+        const boxY = height - 150;
+        
+        const box = this.add.rectangle(boxX, boxY, boxWidth - 160, boxHeight, 0x000000, 0.75);
+        box.setStrokeStyle(4, 0xba68c8); // Magical purple/pink border
+        
+        // Name Tag Background
+        const nameTagBox = this.add.rectangle(boxX - (boxWidth - 160) / 2 + 60, boxY - boxHeight / 2, 120, 40, 0xba68c8, 1);
+        
+        // Name Tag Text
+        const nameTag = this.add.text(nameTagBox.x, nameTagBox.y, 'Aria', {
+            fontFamily: 'Quicksand', fontSize: '22px', color: '#ffffff', fontWeight: 'bold'
         }).setOrigin(0.5);
-        this.dialogueContainer.add([box, text]);
+        
+        // The message text
+        const text = this.add.text(boxX, boxY, '', {
+            fontFamily: 'Quicksand', 
+            fontSize: '24px', 
+            color: '#ffffff', 
+            wordWrap: { width: boxWidth - 220 }, 
+            align: 'left'
+        }).setOrigin(0.5);
+        
+        this.dialogueContainer.add([box, aria, nameTagBox, nameTag, text]);
+        
+        // Aria Float Animation
+        this.tweens.add({
+            targets: aria,
+            y: '-=15',
+            duration: 2000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+        
+        // Fade in entire sequence
+        this.tweens.add({
+            targets: [aria, box, nameTagBox, nameTag],
+            alpha: 1,
+            duration: 600
+        });
 
         let i = 0;
         this.time.addEvent({
-            delay: 40,
+            delay: 35,
             callback: () => {
                 if (!text || !text.scene) return;
                 text.text += message[i];
                 i++;
                 if (i === message.length) {
-                    this.time.delayedCall(3000, () => {
+                    this.time.delayedCall(4000, () => {
                         if (this.dialogueContainer && this.dialogueContainer.scene) {
-                            this.tweens.add({ targets: this.dialogueContainer, alpha: 0, duration: 500, onComplete: () => this.dialogueContainer && this.dialogueContainer.destroy() });
+                            this.tweens.add({ 
+                                targets: this.dialogueContainer, 
+                                alpha: 0, 
+                                duration: 500, 
+                                onComplete: () => {
+                                    if (this.dialogueContainer) {
+                                        this.dialogueContainer.destroy();
+                                        this.dialogueContainer = null;
+                                    }
+                                } 
+                            });
                         }
                     });
                 }

@@ -31,7 +31,7 @@ export default class MenuScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Start Button
-        const startButton = this.add.text(width / 2, height / 2 + 150, 'Jogar', {
+        const startButton = this.add.text(width / 2, height / 2 + 150, 'Wake Up', {
             fontFamily: 'Quicksand',
             fontSize: '50px',
             color: '#ffffff',
@@ -44,7 +44,7 @@ export default class MenuScene extends Phaser.Scene {
             await audioManager.init();
             this.cameras.main.fadeOut(1000, 255, 255, 255);
             this.cameras.main.once('camerafadeoutcomplete', () => {
-                this.scene.start('GameScene', { mapIndex: 0, lives: 3 });
+                this.scene.start('CutsceneScene');
             });
         })
         .on('pointerover', () => startButton.setStyle({ fill: '#ffeb3b' }))
