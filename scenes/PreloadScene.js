@@ -41,9 +41,9 @@ export default class PreloadScene extends Phaser.Scene {
         // Load assets
         this.load.image('nova-front', 'Assets/nova-main-sprite.webp'); // Main consistent sprite
         this.load.image('nova-back', 'Assets/nova-back-final-webp.jpeg'); // Accurate silhouette back view
-        this.load.image('nova-side', 'assets/nova-main-sprite.webp'); // Use main sprite for side views to keep design 100% identical
-        this.load.image('nova-side-left', 'assets/nova-main-sprite.webp');
-        this.load.image('nova-side-right', 'assets/nova-main-sprite.webp');
+        this.load.image('nova-side', 'Assets/nova-main-sprite.webp'); // Use main sprite for side views to keep design 100% identical
+        this.load.image('nova-side-left', 'Assets/nova-main-sprite.webp');
+        this.load.image('nova-side-right', 'Assets/nova-main-sprite.webp');
         
         this.load.image('dreamscape-bg', 'Assets/dreamscape-bg.webp');
         this.load.image('map1-bg', 'Assets/map1-bg-blue.webp');
@@ -51,9 +51,9 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image('map3-bg', 'Assets/map3-bg-surreal.webp');
         
         this.load.image('crystal-shard', 'Assets/crystal-shard.webp');
-        this.load.image('altar', 'Assets/altar.webp');
+        this.load.image('altar', 'Assets/pilar-lógico.webp');
         this.load.image('spike', 'Assets/shadow-crystal-webp.webp');
-        this.load.image('dream-pad', 'Assets/memory-echo.webp'); // Temporary pad visual
+        this.load.image('dream-pad', 'Assets/altar.webp'); // Temporary pad visual
         this.load.image('aria-guide', 'Assets/aria-guide-webp.jpeg');
     }
 
