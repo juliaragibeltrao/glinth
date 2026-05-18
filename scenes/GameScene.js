@@ -1,4 +1,3 @@
-
 import Phaser from 'phaser';
 import Player from '../entities/Player.js';
 import { audioManager } from '../AudioManager.js';
@@ -19,8 +18,8 @@ export default class GameScene extends Phaser.Scene {
                 name: 'The Mystical Shallows',
                 themeColor: 0x4fc3f7,
                 difficulty: 'Gentle',
-                narrative: 'Bem vindo, Nova! Eu sou Aria, sua guia. Olhe para esses orbes de luz... guie-os até os pedestais para abrir seu caminho.',
-                history: 'Um fragmento de uma memória: Um brinquedo de infância, perdido num mar azul de mantas.',
+                narrative: 'Welcome, Nova! I am Aria, your guide. Look at those orbs of light... guide them to the pedestals to open your path.',
+                history: 'A fragment of a memory: A childhood toy, lost in a blue sea of blankets.',
                 orbCount: 2,
                 particleConfig: {
                     speedX: { min: -5, max: 5 },
@@ -37,8 +36,8 @@ export default class GameScene extends Phaser.Scene {
                 name: 'Autumnal Echoes',
                 themeColor: 0xffb74d,
                 difficulty: 'Tricky',
-                narrative: 'Tenha cuidado aqui, o sonho está mudando. Mais orbes precisam de seu lugar para que o sonho mantenha sua ordem.',
-                history: 'Um fragmento de memória: O som de folhas sendo esmagadas enquanto eu corria de casa.',
+                narrative: 'Be careful here, the dream is shifting. More orbs need their place for the dream to maintain its order.',
+                history: 'A fragment of a memory: The sound of crunching leaves as I ran from home.',
                 orbCount: 3,
                 particleConfig: {
                     speedX: { min: -20, max: 20 },
@@ -56,8 +55,8 @@ export default class GameScene extends Phaser.Scene {
                 name: 'The Chronos Void',
                 themeColor: 0xba68c8,
                 difficulty: 'Intense',
-                narrative: 'Estamos perto do fim, mas os fragmentos são muitos. Alinhe as peças finais para encontrar o caminho de volta para casa.',
-                history: 'A verdade final: este mundo é apenas uma gaiola que eu mesmo criei.',
+                narrative: 'We are close to the end, but the fragments are many. Align the final pieces to find your way back home.',
+                history: 'The final truth: This world is but a cage of my own making.',
                 orbCount: 4,
                 particleConfig: {
                     speedX: { min: -50, max: 50 },
@@ -285,27 +284,34 @@ export default class GameScene extends Phaser.Scene {
                 // Skip if orb is already locked to another slot (optional but good)
                 const dist = Phaser.Math.Distance.Between(orb.x, orb.y, slot.x, slot.y);
                 
-                if (dist < 120) { // Even larger magnetic radius
+                if (dist < 150) { // Larger initial magnetic pull
                     isAnyOrbClose = true;
                     
-                    // If close, start pulling and reduce orb's resistance
-                    const pullStrength = 0.25;
+                    // Stronger suction from further away
+                    const pullStrength = 0.35;
                     orb.x = Phaser.Math.Linear(orb.x, slot.x, pullStrength);
                     orb.y = Phaser.Math.Linear(orb.y, slot.y, pullStrength);
                     
-                    // When close to snapping, make it easier
-                    if (dist < 50) {
-                        // Disable collision with player once it's basically home
-                        // This prevents the player from pushing it out while trying to "fit" it
+                    // Very generous snapping threshold
+                    if (dist < 70) {
+                        // Fully disable physics so it can't be bumped
                         orb.body.enable = false; 
-                        orb.x = Phaser.Math.Linear(orb.x, slot.x, 0.4);
-                        orb.y = Phaser.Math.Linear(orb.y, slot.y, 0.4);
                         
-                        // Precise snap
-                        if (dist < 5) {
+                        // Rapid center alignment
+                        orb.x = Phaser.Math.Linear(orb.x, slot.x, 0.5);
+                        orb.y = Phaser.Math.Linear(orb.y, slot.y, 0.5);
+                        
+                        // Final lock when close enough
+                        if (dist < 10) {
                             orb.x = slot.x;
                             orb.y = slot.y;
                             orb.setVelocity(0, 0);
+                            
+                            // Visual confirmation of locking
+                            if (orb.alpha !== 0.8) {
+                                orb.setAlpha(0.8);
+                                this.createBlastEffect(orb.x, orb.y, 0xffeb3b);
+                            }
                         }
                     }
                     orb.setTint(0xffeb3b);
@@ -339,7 +345,7 @@ export default class GameScene extends Phaser.Scene {
             yoyo: true,
             repeat: -1
         });
-        this.showNarrative("Maravilhoso! O Glinth deste reino finalmente apareceu. Vá buscá-lo!");
+        this.showNarrative("Wonderful! The Glinth of this realm has finally appeared. Go get it!");
     }
 
     collectShard(player, shard) {
@@ -348,7 +354,7 @@ export default class GameScene extends Phaser.Scene {
         this.glinthsCollected++;
         this.createBlastEffect(shard.x, shard.y, 0xffffff);
         this.altar.setAlpha(1);
-        this.showNarrative("O Altar está acordado! O portal para o próximo reino está agora aberto para você.");
+        this.showNarrative("The Altar is awake! The gateway to the next realm is now open for you.");
     }
 
     handleHazardHit(player, hazard) {
@@ -468,7 +474,7 @@ export default class GameScene extends Phaser.Scene {
             }
         });
 
-        this.showNarrative("Você conseguiu, Nova! A luz está voltando. É hora de acordar.");
+        this.showNarrative("You've done it, Nova! The light is returning. It's time to wake up.");
     }
 
     showEnding() {
@@ -484,7 +490,7 @@ export default class GameScene extends Phaser.Scene {
         wakingNova.setScale(0.6);
         wakingNova.setAlpha(0);
         
-        const endTitle = this.add.text(width / 2, height / 2 + 100, "Nova acorda com um suspiro.", {
+        const endTitle = this.add.text(width / 2, height / 2 + 100, "Nova wakes up with a gasp.", {
             fontFamily: 'Quicksand',
             fontSize: '60px',
             fontWeight: '700',
@@ -492,14 +498,14 @@ export default class GameScene extends Phaser.Scene {
             align: 'center'
         }).setOrigin(0.5).setAlpha(0);
 
-        const endSubtitle = this.add.text(width / 2, height / 2 + 200, "O pesadelo acabou. Ela está segura.\nO alívio toma conta dela enquanto o sol da manhã enche a sala.", {
+        const endSubtitle = this.add.text(width / 2, height / 2 + 200, "The nightmare is over. She is safe.\nRelief washes over her as the morning sun fills the room.", {
             fontFamily: 'Quicksand',
             fontSize: '32px',
             color: '#34495e',
             align: 'center'
         }).setOrigin(0.5).setAlpha(0);
 
-        const restartButton = this.add.text(width / 2, height - 150, "Voltar ao sonho", {
+        const restartButton = this.add.text(width / 2, height - 150, "Return to the dream", {
             fontFamily: 'Quicksand',
             fontSize: '28px',
             color: '#7f8c8d',
