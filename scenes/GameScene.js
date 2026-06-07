@@ -126,7 +126,6 @@ export default class GameScene extends Phaser.Scene {
         // Physics
         this.physics.add.collider(this.player, this.orbs, this.pushOrb, null, this);
         this.physics.add.collider(this.orbs, this.orbs);
-        this.physics.add.collider(this.player, this.altar);
         this.physics.add.overlap(this.player, this.hazards, this.handleHazardHit, null, this);
         this.physics.add.overlap(this.player, this.shards, this.collectShard, null, this);
         this.physics.add.overlap(this.player, this.altar, this.interactAltar, null, this);
