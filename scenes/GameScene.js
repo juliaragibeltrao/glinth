@@ -126,7 +126,6 @@ export default class GameScene extends Phaser.Scene {
         // Physics
         this.physics.add.collider(this.player, this.orbs, this.pushOrb, null, this);
         this.physics.add.collider(this.orbs, this.orbs);
-        this.physics.add.collider(this.player, this.altar);
         this.physics.add.overlap(this.player, this.hazards, this.handleHazardHit, null, this);
         this.physics.add.overlap(this.player, this.shards, this.collectShard, null, this);
         this.physics.add.overlap(this.player, this.altar, this.interactAltar, null, this);
@@ -325,41 +324,67 @@ export default class GameScene extends Phaser.Scene {
         // Check Orb/Slot alignment
         let alignedCount = 0;
         this.slots.getChildren().forEach(slot => {
+            if (slot.isFilled) {
+                alignedCount++;
+                return;
+            }
+
             let isAnyOrbClose = false;
             this.orbs.getChildren().forEach(orb => {
+                if (slot.isFilled) return;
+
                 const dist = Phaser.Math.Distance.Between(orb.x, orb.y, slot.x, slot.y);
-                
+
                 if (dist < 150) { 
                     isAnyOrbClose = true;
                     const pullStrength = 0.35;
                     orb.x = Phaser.Math.Linear(orb.x, slot.x, pullStrength);
                     orb.y = Phaser.Math.Linear(orb.y, slot.y, pullStrength);
-                    
+
                     if (dist < 70) {
-                        orb.body.enable = false; 
                         orb.x = Phaser.Math.Linear(orb.x, slot.x, 0.5);
                         orb.y = Phaser.Math.Linear(orb.y, slot.y, 0.5);
-                        
-                        if (dist < 10) {
-                            orb.x = slot.x;
-                            orb.y = slot.y;
-                            orb.setVelocity(0, 0);
-                            if (orb.alpha !== 0.8) {
-                                orb.setAlpha(0.8);
-                                this.createBlastEffect(orb.x, orb.y, 0xffeb3b);
-                            }
+                    }
+
+                    if (dist < 10) {
+                        orb.body.enable = false;
+                        orb.x = slot.x;
+                        orb.y = slot.y;
+                        orb.setVelocity(0, 0);
+                        if (orb.alpha !== 0.8) {
+                            orb.setAlpha(0.8);
+                            this.createBlastEffect(orb.x, orb.y, 0xffeb3b);
                         }
+                        slot.isFilled = true;
                     }
                     orb.setTint(0xffeb3b);
                 }
             });
-            
-            if (isAnyOrbClose) {
+
+            if (slot.isFilled) {
                 alignedCount++;
+                slot.setTint(0xffeb3b);
+            } else if (isAnyOrbClose) {
                 slot.setTint(0xffeb3b);
             } else {
                 slot.setTint(0x4a148c);
             }
+        });
+
+        // Push orbs away from filled slots so they don't cluster
+        this.orbs.getChildren().forEach(orb => {
+            if (!orb.body.enable) return;
+            this.slots.getChildren().forEach(slot => {
+                if (!slot.isFilled) return;
+                const dist = Phaser.Math.Distance.Between(orb.x, orb.y, slot.x, slot.y);
+                if (dist < 200) {
+                    const angle = Phaser.Math.Angle.Between(slot.x, slot.y, orb.x, orb.y);
+                    orb.setVelocity(
+                        Math.cos(angle) * 300,
+                        Math.sin(angle) * 300
+                    );
+                }
+            });
         });
 
         // Dynamic BG Brightness based on progress
