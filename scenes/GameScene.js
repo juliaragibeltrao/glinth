@@ -18,9 +18,9 @@ export default class GameScene extends Phaser.Scene {
                 name: 'The Mystical Shallows',
                 themeColor: 0x4fc3f7,
                 difficulty: 'Gentle',
-                narrative: 'Welcome, Nova! I am Aria, your guide. Look at those orbs of light... guide them to the pedestals to open your path.',
-                history: 'A fragment of a memory: A childhood toy, lost in a blue sea of blankets.',
-                orbCount: 2,
+                narrative: 'Bem vindo, Nova! Eu sou Ária. Guie os orbes para os pedestais. Você pode segurar o ESPAÇO para atraí-los para você!',
+                history: 'Um fragmento de uma memória: Um brinquedo de infância, perdido num mar azul de mantas.',
+                orbCount: 3,
                 particleConfig: {
                     speedX: { min: -5, max: 5 },
                     speedY: { min: -15, max: -5 },
@@ -36,9 +36,9 @@ export default class GameScene extends Phaser.Scene {
                 name: 'Autumnal Echoes',
                 themeColor: 0xffb74d,
                 difficulty: 'Tricky',
-                narrative: 'Be careful here, the dream is shifting. More orbs need their place for the dream to maintain its order.',
-                history: 'A fragment of a memory: The sound of crunching leaves as I ran from home.',
-                orbCount: 3,
+                narrative: 'O sonho se aprofunda. Mais orbes, mais perigo. Use seu poder de atração com sabedoria.',
+                history: 'Um fragmento de memória: O som de folhas sendo esmagadas enquanto eu corria de casa.',
+                orbCount: 5,
                 particleConfig: {
                     speedX: { min: -20, max: 20 },
                     speedY: { min: 20, max: 50 }, // Falling down like leaves
@@ -55,9 +55,9 @@ export default class GameScene extends Phaser.Scene {
                 name: 'The Chronos Void',
                 themeColor: 0xba68c8,
                 difficulty: 'Intense',
-                narrative: 'We are close to the end, but the fragments are many. Align the final pieces to find your way back home.',
-                history: 'The final truth: This world is but a cage of my own making.',
-                orbCount: 4,
+                narrative: 'Esse é o teste final. Os cacos são muitos e as sombras estão por toda parte',
+                history: 'A verdade final: este mundo é apenas uma gaiola que eu mesmo criei.',
+                orbCount: 7,
                 particleConfig: {
                     speedX: { min: -50, max: 50 },
                     speedY: { min: -50, max: 50 }, // Erratic expansion
@@ -190,6 +190,9 @@ export default class GameScene extends Phaser.Scene {
 
         // ESC key to pause
         this.input.keyboard.on('keydown-ESC', () => this.pauseGame());
+        
+        // Attraction key
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
     pauseGame() {
@@ -208,12 +211,13 @@ export default class GameScene extends Phaser.Scene {
         this.hazards.clear(true, true);
         this.shards.clear(true, true);
         this.glinthsCollected = 0;
+        this.bg.setAlpha(0.4); // Start dimmer
 
         // Spawn Slots and Orbs
         for (let i = 0; i < currentMap.orbCount; i++) {
             // Slots (Pedestals)
             const slotX = 300 + (i * (width - 600) / (currentMap.orbCount - 1 || 1));
-            const slotY = 400;
+            const slotY = 350;
             const slot = this.add.sprite(slotX, slotY, 'dream-pad');
             slot.setScale(0.5);
             slot.setTint(currentMap.themeColor);
@@ -222,52 +226,53 @@ export default class GameScene extends Phaser.Scene {
 
             // Orbs
             const orbX = Phaser.Math.Between(200, width - 200);
-            const orbY = Phaser.Math.Between(600, height - 300);
+            const orbY = Phaser.Math.Between(650, height - 250);
             const orb = this.orbs.create(orbX, orbY, 'crystal-shard');
             orb.setScale(0.2);
             orb.setTint(0xffffff);
-            orb.setDrag(500); // Reduced drag from 1000 to 500 for easier movement
+            orb.setDrag(400); 
             orb.setCircle(100);
-            orb.setBounce(0.5); // More reactive
+            orb.setBounce(0.6); 
             orb.body.setCollideWorldBounds(true);
         }
 
-        // Hazards
-        const hazardCount = (this.currentMapIndex + 1) * 3;
+        // Hazards - Fully Dynamic
+        const hazardCount = (this.currentMapIndex + 1) * 4; 
         for (let i = 0; i < hazardCount; i++) {
-            const x = Phaser.Math.Between(200, width - 200);
-            const y = Phaser.Math.Between(300, 500);
+            const x = Phaser.Math.Between(150, width - 150);
+            const y = Phaser.Math.Between(250, height - 350); 
             const hazard = this.hazards.create(x, y, 'spike');
-            hazard.setScale(0.15); // Slightly larger
-            // We'll keep a subtle tint to match the realm, but the base asset is dark
-            const tint = this.mapConfigs[this.currentMapIndex].themeColor;
-            hazard.setTint(tint);
-            hazard.setAlpha(0.8);
+            hazard.setScale(0.14);
+            hazard.setTint(currentMap.themeColor);
+            hazard.setAlpha(0.7);
             
-            // Add a floating and pulsing animation to hazards
+            // All hazards now move in patrol patterns
+            const moveDist = Phaser.Math.Between(120, 300);
+            const horizontal = Math.random() > 0.5;
+            
             this.tweens.add({
                 targets: hazard,
-                y: '+=10',
-                duration: 1500 + Math.random() * 500,
+                x: horizontal ? (hazard.x + moveDist > width - 100 ? hazard.x - moveDist : hazard.x + moveDist) : hazard.x,
+                y: !horizontal ? (hazard.y + moveDist > height - 100 ? hazard.y - moveDist : hazard.y + moveDist) : hazard.y,
+                duration: 1500 + Math.random() * 2500,
                 yoyo: true,
                 repeat: -1,
                 ease: 'Sine.easeInOut'
             });
 
+            // Extra spinning/pulsing effect for all
             this.tweens.add({
                 targets: hazard,
-                scale: 0.17,
-                duration: 2000,
-                yoyo: true,
+                angle: 360,
+                duration: 3000 + Math.random() * 2000,
                 repeat: -1,
-                ease: 'Sine.easeInOut'
+                ease: 'Linear'
             });
         }
     }
 
     pushOrb(player, orb) {
-        // More powerful push logic
-        const pushForce = 0.9;
+        const pushForce = 0.8;
         orb.setVelocityX(player.body.velocity.x * pushForce);
         orb.setVelocityY(player.body.velocity.y * pushForce);
     }
@@ -276,38 +281,69 @@ export default class GameScene extends Phaser.Scene {
         if (this.isGameOver) return;
         this.player.update();
 
+        // Attraction Logic with focus progression
+        if (this.spaceKey.isDown) {
+            this.attractionTime = (this.attractionTime || 0) + 1;
+            const focusFactor = Math.min(this.attractionTime / 60, 1); // Max focus after 1 sec
+            
+            // Slow down Nova during deep focus
+            if (focusFactor > 0.5) {
+                this.player.speed = 250; 
+                if (this.time.now % 50 < 10) this.createBlastEffect(this.player.x, this.player.y, 0xffffff);
+            } else {
+                this.player.speed = 400;
+            }
+
+            this.orbs.getChildren().forEach(orb => {
+                if (orb.body.enable) {
+                    const dist = Phaser.Math.Distance.Between(orb.x, orb.y, this.player.x, this.player.y);
+                    const range = 400 + (focusFactor * 300); // Range grows with focus
+                    
+                    if (dist < range) {
+                        const angle = Phaser.Math.Angle.Between(orb.x, orb.y, this.player.x, this.player.y);
+                        const pullSpeed = 200 + (focusFactor * 200);
+                        
+                        orb.setVelocityX(Math.cos(angle) * pullSpeed);
+                        orb.setVelocityY(Math.sin(angle) * pullSpeed);
+                        
+                        if (this.time.now % 100 < 15) {
+                            const particle = this.add.circle(orb.x, orb.y, 2, 0xba68c8, 0.5);
+                            this.tweens.add({
+                                targets: particle,
+                                x: this.player.x, y: this.player.y,
+                                alpha: 0, duration: 300, onComplete: () => particle.destroy()
+                            });
+                        }
+                    }
+                }
+            });
+        } else {
+            this.attractionTime = 0;
+            this.player.speed = 400;
+        }
+
         // Check Orb/Slot alignment
         let alignedCount = 0;
         this.slots.getChildren().forEach(slot => {
             let isAnyOrbClose = false;
             this.orbs.getChildren().forEach(orb => {
-                // Skip if orb is already locked to another slot (optional but good)
                 const dist = Phaser.Math.Distance.Between(orb.x, orb.y, slot.x, slot.y);
                 
-                if (dist < 150) { // Larger initial magnetic pull
+                if (dist < 150) { 
                     isAnyOrbClose = true;
-                    
-                    // Stronger suction from further away
                     const pullStrength = 0.35;
                     orb.x = Phaser.Math.Linear(orb.x, slot.x, pullStrength);
                     orb.y = Phaser.Math.Linear(orb.y, slot.y, pullStrength);
                     
-                    // Very generous snapping threshold
                     if (dist < 70) {
-                        // Fully disable physics so it can't be bumped
                         orb.body.enable = false; 
-                        
-                        // Rapid center alignment
                         orb.x = Phaser.Math.Linear(orb.x, slot.x, 0.5);
                         orb.y = Phaser.Math.Linear(orb.y, slot.y, 0.5);
                         
-                        // Final lock when close enough
                         if (dist < 10) {
                             orb.x = slot.x;
                             orb.y = slot.y;
                             orb.setVelocity(0, 0);
-                            
-                            // Visual confirmation of locking
                             if (orb.alpha !== 0.8) {
                                 orb.setAlpha(0.8);
                                 this.createBlastEffect(orb.x, orb.y, 0xffeb3b);
@@ -325,6 +361,10 @@ export default class GameScene extends Phaser.Scene {
                 slot.setTint(0x4a148c);
             }
         });
+
+        // Dynamic BG Brightness based on progress
+        const progress = alignedCount / this.mapConfigs[this.currentMapIndex].orbCount;
+        this.bg.setAlpha(0.4 + (progress * 0.6));
 
         this.puzzleLabel.setText(`Orbs Aligned: ${alignedCount} / ${this.mapConfigs[this.currentMapIndex].orbCount}`);
 
@@ -345,7 +385,7 @@ export default class GameScene extends Phaser.Scene {
             yoyo: true,
             repeat: -1
         });
-        this.showNarrative("Wonderful! The Glinth of this realm has finally appeared. Go get it!");
+        this.showNarrative("Maravilhoso! O Glinth deste reino finalmente apareceu. Vá buscá-lo!");
     }
 
     collectShard(player, shard) {
@@ -354,7 +394,7 @@ export default class GameScene extends Phaser.Scene {
         this.glinthsCollected++;
         this.createBlastEffect(shard.x, shard.y, 0xffffff);
         this.altar.setAlpha(1);
-        this.showNarrative("The Altar is awake! The gateway to the next realm is now open for you.");
+        this.showNarrative("O Altar está acordado! O portal para o próximo reino está agora aberto para você.");
     }
 
     handleHazardHit(player, hazard) {
@@ -474,7 +514,7 @@ export default class GameScene extends Phaser.Scene {
             }
         });
 
-        this.showNarrative("You've done it, Nova! The light is returning. It's time to wake up.");
+        this.showNarrative("Você conseguiu, Nova! A luz está voltando. É hora de acordar.");
     }
 
     showEnding() {
@@ -490,7 +530,7 @@ export default class GameScene extends Phaser.Scene {
         wakingNova.setScale(0.6);
         wakingNova.setAlpha(0);
         
-        const endTitle = this.add.text(width / 2, height / 2 + 100, "Nova wakes up with a gasp.", {
+        const endTitle = this.add.text(width / 2, height / 2 + 100, "Nova acorda com um suspiro", {
             fontFamily: 'Quicksand',
             fontSize: '60px',
             fontWeight: '700',
@@ -498,14 +538,14 @@ export default class GameScene extends Phaser.Scene {
             align: 'center'
         }).setOrigin(0.5).setAlpha(0);
 
-        const endSubtitle = this.add.text(width / 2, height / 2 + 200, "The nightmare is over. She is safe.\nRelief washes over her as the morning sun fills the room.", {
+        const endSubtitle = this.add.text(width / 2, height / 2 + 200, "O pesadelo terminou. Ela está segura.\nO alívio toma conta dela enquanto o sol da manhã enche a sala.", {
             fontFamily: 'Quicksand',
             fontSize: '32px',
             color: '#34495e',
             align: 'center'
         }).setOrigin(0.5).setAlpha(0);
 
-        const restartButton = this.add.text(width / 2, height - 150, "Return to the dream", {
+        const restartButton = this.add.text(width / 2, height - 150, "Retorne para o sonho", {
             fontFamily: 'Quicksand',
             fontSize: '28px',
             color: '#7f8c8d',

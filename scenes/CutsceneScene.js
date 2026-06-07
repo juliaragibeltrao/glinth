@@ -141,50 +141,8 @@ export default class CutsceneScene extends Phaser.Scene {
         if (this.hasAdvanced) return;
         this.hasAdvanced = true;
 
-        // Fade out video element if it exists
-        if (this.videoElement) {
-            this.videoElement.style.opacity = '0';
-        }
-        if (this.skipButtonElement) {
-            this.skipButtonElement.style.opacity = '0';
-        }
-        if (this.hintElement) {
-            this.hintElement.style.opacity = '0';
-        }
-
-        const { width, height } = this.scale;
-        
-        // Transition Text
-        const transText = this.add.text(width / 2, height / 2, 'The dream begins...', {
-            fontFamily: 'Quicksand',
-            fontSize: '48px',
-            color: '#ffffff',
-            alpha: 0
-        }).setOrigin(0.5).setDepth(100);
-
-        // White Flash Overlay
-        const whiteOverlay = this.add.rectangle(width / 2, height / 2, width, height, 0xffffff, 0).setDepth(101);
-
-        this.tweens.add({
-            targets: transText,
-            alpha: 1,
-            duration: 800,
-            ease: 'Power2.easeIn',
-            onComplete: () => {
-                this.time.delayedCall(1200, () => {
-                    this.tweens.add({
-                        targets: [transText, whiteOverlay],
-                        alpha: { from: 0, to: 1 },
-                        fillAlpha: { from: 0, to: 1 },
-                        duration: 1000,
-                        onComplete: () => {
-                            this.cleanupDomElements();
-                            this.scene.start('GameScene', { mapIndex: 0, lives: 3 });
-                        }
-                    });
-                });
-            }
-        });
+        this.cleanupDomElements();
+        this.scene.start('GameScene', { mapIndex: 0, lives: 3 });
     }
 
     cleanupDomElements() {
