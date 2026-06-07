@@ -324,21 +324,28 @@ export default class GameScene extends Phaser.Scene {
         // Check Orb/Slot alignment
         let alignedCount = 0;
         this.slots.getChildren().forEach(slot => {
+            if (slot.isFilled) {
+                alignedCount++;
+                return;
+            }
+
             let isAnyOrbClose = false;
             this.orbs.getChildren().forEach(orb => {
+                if (slot.isFilled || !orb.body.enable) return;
+
                 const dist = Phaser.Math.Distance.Between(orb.x, orb.y, slot.x, slot.y);
-                
+
                 if (dist < 150) { 
                     isAnyOrbClose = true;
                     const pullStrength = 0.35;
                     orb.x = Phaser.Math.Linear(orb.x, slot.x, pullStrength);
                     orb.y = Phaser.Math.Linear(orb.y, slot.y, pullStrength);
-                    
+
                     if (dist < 70) {
                         orb.body.enable = false; 
                         orb.x = Phaser.Math.Linear(orb.x, slot.x, 0.5);
                         orb.y = Phaser.Math.Linear(orb.y, slot.y, 0.5);
-                        
+
                         if (dist < 10) {
                             orb.x = slot.x;
                             orb.y = slot.y;
@@ -347,14 +354,17 @@ export default class GameScene extends Phaser.Scene {
                                 orb.setAlpha(0.8);
                                 this.createBlastEffect(orb.x, orb.y, 0xffeb3b);
                             }
+                            slot.isFilled = true;
                         }
                     }
                     orb.setTint(0xffeb3b);
                 }
             });
-            
-            if (isAnyOrbClose) {
+
+            if (slot.isFilled) {
                 alignedCount++;
+                slot.setTint(0xffeb3b);
+            } else if (isAnyOrbClose) {
                 slot.setTint(0xffeb3b);
             } else {
                 slot.setTint(0x4a148c);
