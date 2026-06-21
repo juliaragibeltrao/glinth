@@ -255,6 +255,7 @@ export default class GameScene extends Phaser.Scene {
             const slot = this.add.sprite(slotX, slotY, 'dream-pad');
             slot.setScale(0.5);
             slot.setTint(0x4a148c);
+            slot.setDepth(0);
             slot.isFilled = false;
             this.slots.add(slot);
 
@@ -272,6 +273,7 @@ export default class GameScene extends Phaser.Scene {
             const orb = this.orbs.create(orbX, orbY, 'crystal-shard');
             orb.setScale(0.2);
             orb.setTint(0xffffff);
+            orb.setDepth(1);
             orb.setDrag(400); 
             orb.setCircle(100);
             orb.setBounce(0.6); 
