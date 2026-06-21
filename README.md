@@ -2,11 +2,11 @@
   <img src="Assets/nova-main-sprite.webp" alt="Nova" width="120" />
   <h1>Glinth</h1>
   <p><em>A Dreamer's Odyssey</em></p>
-  <p>
-    <a href="https://juliaragibeltrao.github.io/glinth/">
-      <strong>Play Now »</strong>
-    </a>
-  </p>
+  <br>
+  <a href="https://juliaragibeltrao.github.io/glinth/" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #7e57c2, #ba68c8); color: #ffffff; font-size: 24px; font-weight: 700; font-family: 'Quicksand', sans-serif; text-decoration: none; border-radius: 14px; box-shadow: 0 8px 30px rgba(126,87,194,0.5); transition: transform 0.2s, box-shadow 0.2s;">
+    ▶ PLAY NOW
+  </a>
+  <br>
   <br>
   <img src="Assets/dreamscape-bg.webp" alt="Screenshot" width="600" style="border-radius: 12px;" />
 </div>
