@@ -58,8 +58,6 @@ export default class EndingCutsceneScene extends Phaser.Scene {
         skipButton.textContent = 'Skip Cutscene';
         skipButton.type = 'button';
         skipButton.style.position = 'absolute';
-        skipButton.style.top = 'clamp(16px, 4vw, 42px)';
-        skipButton.style.right = 'clamp(16px, 4vw, 42px)';
         skipButton.style.zIndex = '25';
         skipButton.style.padding = '12px 22px';
         skipButton.style.border = '2px solid rgba(255,255,255,0.55)';
@@ -75,9 +73,6 @@ export default class EndingCutsceneScene extends Phaser.Scene {
         const hint = document.createElement('div');
         hint.textContent = 'Pressione ESC ou SPACE para pular';
         hint.style.position = 'absolute';
-        hint.style.left = '50%';
-        hint.style.bottom = 'clamp(18px, 4vw, 42px)';
-        hint.style.transform = 'translateX(-50%)';
         hint.style.zIndex = '25';
         hint.style.color = 'rgba(255,255,255,0.78)';
         hint.style.fontFamily = 'Quicksand, sans-serif';
@@ -85,6 +80,7 @@ export default class EndingCutsceneScene extends Phaser.Scene {
         hint.style.textAlign = 'center';
         hint.style.textShadow = '0 2px 12px rgba(0,0,0,0.7)';
         hint.style.pointerEvents = 'none';
+        hint.style.whiteSpace = 'nowrap';
 
         const syncOverlayBounds = () => {
             const rect = canvas.getBoundingClientRect();
@@ -94,18 +90,17 @@ export default class EndingCutsceneScene extends Phaser.Scene {
             const width = rect.width;
             const height = rect.height;
 
-            [video, skipButton, hint].forEach((element) => {
-                element.style.boxSizing = 'border-box';
-            });
-
             video.style.left = `${left}px`;
             video.style.top = `${top}px`;
             video.style.width = `${width}px`;
             video.style.height = `${height}px`;
 
-            skipButton.style.transform = `translate(${left}px, ${top}px)`;
+            skipButton.style.top = `${top + 14}px`;
+            skipButton.style.right = `${(parentRect.right - rect.right) + 14}px`;
+
             hint.style.left = `${left + width / 2}px`;
-            hint.style.transform = `translateX(-50%) translateY(${top}px)`;
+            hint.style.bottom = `${(parentRect.bottom - rect.bottom) + 22}px`;
+            hint.style.transform = 'translateX(-50%)';
         };
 
         this.videoElement = video;
