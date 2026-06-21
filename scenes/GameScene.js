@@ -57,7 +57,7 @@ export default class GameScene extends Phaser.Scene {
                 difficulty: 'Intense',
                 narrative: 'Esse é o teste final. Os cacos são muitos e as sombras estão por toda parte',
                 history: 'A verdade final: este mundo é apenas uma gaiola que eu mesmo criei.',
-                orbCount: 7,
+                orbCount: 6,
                 particleConfig: {
                     speedX: { min: -50, max: 50 },
                     speedY: { min: -50, max: 50 }, // Erratic expansion
@@ -213,19 +213,62 @@ export default class GameScene extends Phaser.Scene {
         this.bg.setAlpha(0.4); // Start dimmer
 
         // Spawn Slots and Orbs
+        const slotMaxY = Math.floor(height * 0.55);
+        const orbMinY = Math.ceil(height * 0.65);
+        const orbMaxY = height - 150;
+
+        const MIN_SLOT_DIST = 350;
         for (let i = 0; i < currentMap.orbCount; i++) {
-            // Slots (Pedestals)
-            const slotX = 300 + (i * (width - 600) / (currentMap.orbCount - 1 || 1));
-            const slotY = 350;
+            // Slots (Pedestals) appear in the top portion
+            let slotX, slotY, tooClose;
+            let attempts = 0;
+            do {
+                slotX = Phaser.Math.Between(180, width - 180);
+                slotY = Phaser.Math.Between(180, slotMaxY);
+                tooClose = false;
+                this.slots.getChildren().forEach(existing => {
+                    const dist = Phaser.Math.Distance.Between(slotX, slotY, existing.x, existing.y);
+                    if (dist < MIN_SLOT_DIST) tooClose = true;
+                });
+                attempts++;
+            } while (tooClose && attempts < 50);
+
+            // Fallback: scan the area with a grid if random attempts failed
+            if (tooClose) {
+                let found = false;
+                for (let y = 180; y <= slotMaxY && !found; y += 30) {
+                    for (let x = 180; x <= width - 180 && !found; x += 30) {
+                        let valid = true;
+                        this.slots.getChildren().forEach(existing => {
+                            const dist = Phaser.Math.Distance.Between(x, y, existing.x, existing.y);
+                            if (dist < MIN_SLOT_DIST) valid = false;
+                        });
+                        if (valid) {
+                            slotX = x;
+                            slotY = y;
+                            found = true;
+                        }
+                    }
+                }
+            }
+
             const slot = this.add.sprite(slotX, slotY, 'dream-pad');
             slot.setScale(0.5);
-            slot.setTint(currentMap.themeColor);
+            slot.setTint(0x4a148c);
             slot.isFilled = false;
             this.slots.add(slot);
 
-            // Orbs
-            const orbX = Phaser.Math.Between(200, width - 200);
-            const orbY = Phaser.Math.Between(650, height - 250);
+            // Orbs appear in the bottom portion, far from pedestals
+            let orbX, orbY;
+            do {
+                orbX = Phaser.Math.Between(200, width - 200);
+                orbY = Phaser.Math.Between(orbMinY, orbMaxY);
+                var orbTooClose = false;
+                this.slots.getChildren().forEach(slot => {
+                    if (Phaser.Math.Distance.Between(orbX, orbY, slot.x, slot.y) < 180) orbTooClose = true;
+                });
+            } while (orbTooClose);
+
             const orb = this.orbs.create(orbX, orbY, 'crystal-shard');
             orb.setScale(0.2);
             orb.setTint(0xffffff);
@@ -235,8 +278,8 @@ export default class GameScene extends Phaser.Scene {
             orb.body.setCollideWorldBounds(true);
         }
 
-        // Hazards - Fully Dynamic
-        const hazardCount = (this.currentMapIndex + 1) * 4; 
+        // Hazards - Dynamic
+        const hazardCount = (this.currentMapIndex + 1) * 3 + 2; 
         for (let i = 0; i < hazardCount; i++) {
             const x = Phaser.Math.Between(150, width - 150);
             const y = Phaser.Math.Between(250, height - 350); 
@@ -326,12 +369,14 @@ export default class GameScene extends Phaser.Scene {
         this.slots.getChildren().forEach(slot => {
             if (slot.isFilled) {
                 alignedCount++;
+                slot.setTint(0xffeb3b);
                 return;
             }
 
             let isAnyOrbClose = false;
             this.orbs.getChildren().forEach(orb => {
                 if (slot.isFilled) return;
+                if (!orb.body.enable) return;
 
                 const dist = Phaser.Math.Distance.Between(orb.x, orb.y, slot.x, slot.y);
 
@@ -364,11 +409,14 @@ export default class GameScene extends Phaser.Scene {
             if (slot.isFilled) {
                 alignedCount++;
                 slot.setTint(0xffeb3b);
-            } else if (isAnyOrbClose) {
-                slot.setTint(0xffeb3b);
             } else {
                 slot.setTint(0x4a148c);
             }
+        });
+
+        // Ensure all slots have the correct tint every frame
+        this.slots.getChildren().forEach(slot => {
+            slot.setTint(slot.isFilled ? 0xffeb3b : 0x4a148c);
         });
 
         // Push orbs away from filled slots so they don't cluster
@@ -535,7 +583,7 @@ export default class GameScene extends Phaser.Scene {
             fillAlpha: 1,
             duration: 4000,
             onComplete: () => {
-                this.showEnding();
+                this.scene.start('EndingCutsceneScene');
             }
         });
 
@@ -551,11 +599,11 @@ export default class GameScene extends Phaser.Scene {
         const bg = this.add.rectangle(width/2, height/2, width, height, 0xffffff);
         
         // Nova waking up sprite
-        const wakingNova = this.add.sprite(width/2, height/2 - 100, 'nova-front');
-        wakingNova.setScale(0.6);
+        const wakingNova = this.add.sprite(width/2, height/2 - 140, 'nova-front');
+        wakingNova.setScale(0.4);
         wakingNova.setAlpha(0);
         
-        const endTitle = this.add.text(width / 2, height / 2 + 100, "Nova acorda com um suspiro", {
+        const endTitle = this.add.text(width / 2, height / 2 + 120, "Nova acorda com um suspiro", {
             fontFamily: 'Quicksand',
             fontSize: '60px',
             fontWeight: '700',
